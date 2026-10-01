@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block head %}<link href="{{ url_for('static', filename='css/login-animation.css') }}" rel="stylesheet">{% endblock %}
+{% block public_content %}
+<div class="login-page">
+  <div class="login-panel">
+    <div class="d-flex align-items-center gap-3 mb-4"><div class="brand-icon"><i class="bi bi-life-preserver"></i></div><div><h1 class="h3 mb-0">ServiceHub</h1><div class="text-muted">Internal Help Desk System</div></div></div>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control form-control-lg" id="email" type="email" name="email" placeholder="nama@perusahaan.com" required autofocus autocomplete="username"></div>
+      <div class="mb-3"><label class="form-label" for="password">Password</label><input class="form-control form-control-lg" id="password" type="password" name="password" required autocomplete="current-password"></div>
+      <div class="form-check mb-4"><input class="form-check-input" type="checkbox" name="remember" id="remember"><label class="form-check-label" for="remember">Ingat saya</label></div>
+      <button class="btn btn-primary btn-lg w-100">Masuk ke ServiceHub</button>
+    </form>
+    <div class="demo-box mt-4"><strong>Akun demo</strong><br><small>admin@servicehub.local / Password123!</small></div>
+  </div>
+  <div class="login-visual">
+    <div class="login-visual-scene" aria-hidden="true">
+      <div class="scene-orb scene-orb-one"></div><div class="scene-orb scene-orb-two"></div>
+      <div class="ops-console">
+        <div class="ops-console-header"><div class="ops-window-dots"><i></i><i></i><i></i></div><span>Service Desk Operations</span><div class="live-indicator"><i></i> LIVE</div></div>
+        <div class="ops-console-body">
+          <div class="ops-summary">
+            <div><small>ACTIVE QUEUE</small><strong>24</strong><span><i class="bi bi-arrow-down-right"></i> 12% today</span></div>
+            <div class="sla-gauge"><div><strong>96.8%</strong><small>SLA</small></div></div>
+          </div>
+          <div class="flow-label"><span>LIVE TICKET FLOW</span><span>STATUS</span></div>
+          <div class="ticket-flow-row flow-one"><div class="flow-icon blue"><i class="bi bi-laptop"></i></div><div class="flow-copy"><strong>Device access request</strong><small>IT Support · TKT-10428</small></div><span class="flow-status">In progress</span></div>
+          <div class="ticket-flow-row flow-two"><div class="flow-icon amber"><i class="bi bi-wifi"></i></div><div class="flow-copy"><strong>Network connectivity</strong><small>Infrastructure · TKT-10429</small></div><span class="flow-status waiting">Pending</span></div>
+          <div class="ticket-flow-row flow-three"><div class="flow-icon green"><i class="bi bi-person-check"></i></div><div class="flow-copy"><strong>Account provisioning</strong><small>Access Control · TKT-10430</small></div><span class="flow-status resolved">Resolved</span></div>
+        </div>
+      </div>
+      <div class="floating-kpi floating-kpi-left"><div class="kpi-icon"><i class="bi bi-lightning-charge"></i></div><div><small>AVG. RESPONSE</small><strong>8m 42s</strong></div><span class="trend-up">−18%</span></div>
+      <div class="floating-kpi floating-kpi-right"><div class="kpi-icon success"><i class="bi bi-check2-circle"></i></div><div><small>RESOLVED TODAY</small><strong>142 tickets</strong></div><div class="mini-bars"><i></i><i></i><i></i><i></i></div></div>
+      <div class="incoming-ticket"><span class="incoming-pulse"></span><div><small>NEW PRIORITY TICKET</small><strong>Critical request routed</strong></div><i class="bi bi-arrow-right"></i></div>
+    </div>
+    <div class="login-visual-copy"><span class="eyebrow">SUPPORT THAT MOVES WORK FORWARD</span><h2>Semua kebutuhan support, dalam satu tempat.</h2><p>Pantau tiket, jaga SLA, dan selesaikan masalah internal dengan lebih cepat.</p></div>
+  </div>
+</div>
+{% endblock %}

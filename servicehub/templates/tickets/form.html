@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Buat Tiket{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Buat Tiket Baru</h1><p>Jelaskan kendala secara lengkap agar tim dapat membantu lebih cepat.</p></div></div>
+<form method="post" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-4">
+    <div class="col-xl-8"><div class="card panel"><div class="card-header"><div><h2>Detail Permintaan</h2><small>Field bertanda * wajib diisi</small></div></div><div class="card-body">
+      <div class="mb-3"><label class="form-label" for="title">Judul *</label><input class="form-control" id="title" name="title" value="{{ request.form.get('title','') }}" maxlength="200" required placeholder="Ringkasan singkat kendala"></div>
+      <div class="mb-3"><label class="form-label" for="description">Deskripsi *</label><textarea class="form-control" id="description" name="description" rows="8" maxlength="10000" required placeholder="Tuliskan kronologi, dampak, pesan error, dan langkah yang sudah dicoba">{{ request.form.get('description','') }}</textarea></div>
+      <div><label class="form-label" for="attachments">Lampiran</label><input class="form-control" type="file" id="attachments" name="attachments" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp"><div class="form-text">Maksimal 5 file, masing-masing 10 MB. Isi file diverifikasi sesuai format.</div></div>
+    </div></div></div>
+    <div class="col-xl-4"><div class="card panel"><div class="card-header"><div><h2>Klasifikasi</h2><small>Membantu routing dan SLA</small></div></div><div class="card-body">
+      <div class="mb-3"><label class="form-label" for="category">Kategori *</label><select class="form-select" id="category" name="category_id" required><option value="">Pilih kategori</option>{% for item in categories %}<option value="{{ item.id }}" {{ 'selected' if request.form.get('category_id')|int == item.id }}>{{ item.name }}</option>{% endfor %}</select></div>
+      <div class="mb-3"><label class="form-label" for="department">Department *</label><select class="form-select" id="department" name="department_id" required><option value="">Pilih department</option>{% for item in departments %}<option value="{{ item.id }}" {{ 'selected' if request.form.get('department_id', current_user.department_id)|int == item.id }}>{{ item.name }}</option>{% endfor %}</select></div>
+      <div class="mb-3"><label class="form-label" for="priority">Priority *</label><select class="form-select" id="priority" name="priority">{% for item in priorities %}<option {{ 'selected' if request.form.get('priority', 'Medium') == item }}>{{ item }}</option>{% endfor %}</select><div class="form-text">Critical hanya untuk gangguan yang menghentikan operasional.</div></div>
+      {% if current_user.is_staff %}<div class="mb-3"><label class="form-label" for="assignee">Assignee</label><select class="form-select" id="assignee" name="assignee_id"><option value="">Belum ditugaskan</option>{% for item in agents %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select></div>{% endif %}
+      <div class="d-grid gap-2"><button class="btn btn-primary">Buat Tiket</button><a href="{{ url_for('tickets.index') }}" class="btn btn-light">Batal</a></div>
+    </div></div></div>
+  </div>
+</form>
+{% endblock %}

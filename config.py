@@ -1,0 +1,38 @@
+import os
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent
+
+
+class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-in-production")
+    ENVIRONMENT = os.getenv("APP_ENV", "development").lower()
+    APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Asia/Jakarta")
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "DATABASE_URL", f"sqlite:///{BASE_DIR / 'instance' / 'servicehub.db'}"
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    ITEMS_PER_PAGE = 10
+    MAX_CONTENT_LENGTH = 55 * 1024 * 1024
+    MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024
+    MAX_ATTACHMENTS_PER_TICKET = 5
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER")
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = ENVIRONMENT == "production"
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = "Lax"
+    REMEMBER_COOKIE_SECURE = ENVIRONMENT == "production"
+    PERMANENT_SESSION_LIFETIME = 8 * 60 * 60
+    WTF_CSRF_TIME_LIMIT = 8 * 60 * 60
+    AUTO_CREATE_DB = os.getenv("AUTO_CREATE_DB", "1").lower() in {"1", "true", "yes"}
+
+
+class TestConfig(Config):
+    TESTING = True
+    WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    UPLOAD_FOLDER = str(BASE_DIR / "instance" / "test_uploads")
+    SECRET_KEY = "test-secret-key"
+    AUTO_CREATE_DB = True

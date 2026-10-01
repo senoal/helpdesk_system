@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Dashboard</h1><p>Ringkasan operasional help desk dan performa SLA.</p></div></div>
+<div class="row g-3 mb-4">
+  {% set cards = [('Total Tiket', metrics.total, 'bi-ticket-perforated', 'blue'), ('Open', metrics.open, 'bi-inbox', 'cyan'), ('Diproses', metrics.progress, 'bi-arrow-repeat', 'amber'), ('Selesai', metrics.completed, 'bi-check-circle', 'green'), ('Overdue', metrics.overdue, 'bi-exclamation-octagon', 'red')] %}
+  {% for label, value, icon, color in cards %}<div class="col-6 col-xl"><div class="metric-card"><div class="metric-icon {{ color }}"><i class="bi {{ icon }}"></i></div><div><div class="metric-value">{{ value }}</div><div class="metric-label">{{ label }}</div></div></div></div>{% endfor %}
+</div>
+<div class="row g-4 mb-4">
+  <div class="col-lg-8"><div class="card panel h-100"><div class="card-header"><div><h2>Tren Tiket</h2><small>Tiket masuk 7 hari terakhir</small></div></div><div class="card-body chart-wrap"><canvas id="trendChart"></canvas></div></div></div>
+  <div class="col-lg-4"><div class="card panel h-100"><div class="card-header"><div><h2>SLA Compliance</h2><small>Tiket selesai sesuai target</small></div></div><div class="card-body d-flex align-items-center justify-content-center"><div class="sla-ring" style="--value: {{ metrics.sla_compliance }}"><div><strong>{{ metrics.sla_compliance }}%</strong><span>Compliant</span></div></div></div></div></div>
+</div>
+<div class="row g-4 mb-4">
+  <div class="col-lg-6"><div class="card panel"><div class="card-header"><div><h2>Distribusi Priority</h2><small>Komposisi seluruh tiket</small></div></div><div class="card-body chart-wrap-sm"><canvas id="priorityChart"></canvas></div></div></div>
+  <div class="col-lg-6"><div class="card panel"><div class="card-header"><div><h2>Status Tiket</h2><small>Posisi tiket saat ini</small></div></div><div class="card-body chart-wrap-sm"><canvas id="statusChart"></canvas></div></div></div>
+</div>
+<div class="row g-4">
+  <div class="col-xl-8"><div class="card panel"><div class="card-header"><div><h2>Tiket Terbaru</h2><small>Aktivitas terbaru</small></div><a href="{{ url_for('tickets.index') }}" class="btn btn-sm btn-light">Lihat semua</a></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>No. Tiket</th><th>Judul</th><th>Priority</th><th>Status</th><th>SLA</th></tr></thead><tbody>{% for t in recent_tickets %}<tr><td><a href="{{ url_for('tickets.detail', ticket_id=t.id) }}" class="ticket-link">{{ t.ticket_number }}</a></td><td>{{ t.title }}</td><td><span class="badge badge-priority priority-{{ t.priority|lower }}">{{ t.priority }}</span></td><td><span class="status-dot status-{{ t.status|lower|replace(' ', '-') }}"></span>{{ t.status }}</td><td><span class="sla-{{ t.sla_state|lower|replace(' ', '-') }}">{{ t.sla_state }}</span></td></tr>{% else %}<tr><td colspan="5" class="empty-state">Belum ada tiket.</td></tr>{% endfor %}</tbody></table></div></div></div>
+  <div class="col-xl-4"><div class="card panel h-100"><div class="card-header"><div><h2>Perlu Perhatian</h2><small>Mendekati atau melewati SLA</small></div></div><div class="card-body p-0">{% for t in urgent_tickets %}<a href="{{ url_for('tickets.detail', ticket_id=t.id) }}" class="urgent-item"><div><strong>{{ t.ticket_number }}</strong><div>{{ t.title }}</div><small>{{ t.sla_deadline|datetime }}</small></div><span class="sla-{{ t.sla_state|lower|replace(' ', '-') }}">{{ t.sla_state }}</span></a>{% else %}<div class="empty-state">Semua tiket aktif masih aman.</div>{% endfor %}</div></div></div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script><script>
+const gridColor='#e9eef5'; Chart.defaults.font.family='Inter, system-ui, sans-serif'; Chart.defaults.color='#64748b';
+new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:{{ day_labels|tojson }},datasets:[{label:'Tiket',data:{{ daily_counts|tojson }},borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',fill:true,tension:.38,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0},grid:{color:gridColor}},x:{grid:{display:false}}}}});
+new Chart(document.getElementById('priorityChart'),{type:'doughnut',data:{labels:{{ priorities|tojson }},datasets:[{data:{{ priority_counts|tojson }},backgroundColor:['#94a3b8','#3b82f6','#f59e0b','#ef4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'right'}}}});
+new Chart(document.getElementById('statusChart'),{type:'bar',data:{labels:{{ status_labels|tojson }},datasets:[{data:{{ status_counts|tojson }},backgroundColor:['#3b82f6','#8b5cf6','#f59e0b','#10b981','#64748b'],borderRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0},grid:{color:gridColor}},x:{grid:{display:false}}}}});
+</script>{% endblock %}
