@@ -2,15 +2,41 @@
 
 Aplikasi help desk internal berbasis Flask dan SQLite untuk pengelolaan tiket, monitoring SLA, dashboard operasional, master data, audit trail, serta reporting agregat.
 
-## Menjalankan aplikasi
+## Menjalankan aplikasi di Windows (cara termudah)
+
+Klik dua kali `start.bat`. Pada pemakaian pertama, launcher akan otomatis:
+
+- membuat virtual environment lokal `.venv` agar tidak tercampur dengan Anaconda/Python lain;
+- memasang versi dependensi yang tepat dari `requirements.txt`;
+- membuat database SQLite dan akun demo jika database masih kosong; dan
+- menjalankan aplikasi di `http://127.0.0.1:8000`.
+
+Koneksi database dan folder upload pada mode ini selalu berada di folder `instance`
+di dalam project, sehingga project dapat dipindahkan ke folder/laptop lain. Python
+3.10 atau lebih baru harus sudah terpasang. Koneksi internet hanya diperlukan saat
+setup pertama untuk mengunduh dependensi.
+
+Jangan menyalin folder `.venv` ke laptop lain. Jika folder tersebut telanjur ikut
+tersalin dan tidak dapat dipakai, `start.bat` akan membuatnya ulang secara otomatis.
+Data aplikasi berada di `instance/servicehub.db`; salin file itu bersama folder
+`instance/uploads` hanya jika data lama memang ingin ikut dipindahkan.
+
+Jika jendela langsung tertutup, jalankan `start.bat` dari Command Prompt agar pesan
+error tetap terlihat.
+
+## Menjalankan aplikasi secara manual
 
 ```powershell
 python -m pip install -r requirements.txt
 python seed.py
-python run.py
+python wsgi.py
 ```
 
-Buka `http://127.0.0.1:5000`. Akun demo:
+Disarankan memakai virtual environment baru pada setiap laptop. Jangan menjalankan
+aplikasi dengan Python/Anaconda global karena versi paket dari project lain dapat
+saling bertabrakan.
+
+Buka `http://127.0.0.1:8000`. Akun demo:
 
 - Admin: `admin@servicehub.local`
 - Agent: `agent@servicehub.local`
@@ -18,6 +44,8 @@ Buka `http://127.0.0.1:5000`. Akun demo:
 - Password seluruh akun: `Password123!`
 
 Mode development tidak mengaktifkan debugger kecuali `FLASK_DEBUG=1` diatur secara eksplisit.
+
+`python run.py` tetap dapat digunakan untuk server development pada port 5000.
 
 ## Menjalankan production
 

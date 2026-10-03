@@ -6,8 +6,8 @@ from zipfile import ZipFile
 import pytest
 from openpyxl import load_workbook
 
-from config import TestConfig
-from servicehub import create_app, db, migrate_legacy_sla_deadlines
+from config import BASE_DIR, TestConfig, env_value, sqlite_url
+from servicehub import create_app, db, ensure_sqlite_directory, migrate_legacy_sla_deadlines
 from servicehub.models import AuditLog, Category, Department, SLAConfig, Ticket, TicketAttachment, TicketHistory, User, utcnow
 from servicehub.utils import local_to_utc, utc_to_local
 
@@ -514,6 +514,28 @@ def test_production_rejects_default_secret():
 
     with pytest.raises(RuntimeError, match="SECRET_KEY"):
         create_app(UnsafeProductionConfig)
+
+
+def test_default_sqlite_url_is_absolute_and_windows_safe():
+    database_uri = sqlite_url(BASE_DIR / "instance" / "servicehub.db")
+
+    assert database_uri.startswith("sqlite:///")
+    assert "\\" not in database_uri
+
+
+def test_blank_environment_value_uses_portable_default(monkeypatch):
+    monkeypatch.setenv("PORTABLE_TEST_VALUE", "   ")
+
+    assert env_value("PORTABLE_TEST_VALUE", "fallback") == "fallback"
+
+
+def test_sqlite_parent_directory_is_created():
+    database_path = BASE_DIR / "instance" / "portable test" / "nested" / "servicehub.db"
+    ensure_sqlite_directory(sqlite_url(database_path))
+
+    assert database_path.parent.is_dir()
+    database_path.parent.rmdir()
+    database_path.parent.parent.rmdir()
 
 
 def test_login_rate_limit_blocks_repeated_failures(app):

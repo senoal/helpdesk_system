@@ -1,3 +1,4 @@
+import sqlite3
 from pathlib import Path
 
 from flask import Flask, render_template
@@ -7,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
+from sqlalchemy.engine.url import make_url
 
 from config import Config
 
@@ -22,11 +24,23 @@ migrate = Migrate()
 
 @event.listens_for(Engine, "connect")
 def enable_sqlite_foreign_keys(dbapi_connection, connection_record):
+    # This hook is registered globally, so do not send SQLite-specific SQL to
+    # PostgreSQL/MySQL connections when DATABASE_URL is overridden.
+    if not isinstance(dbapi_connection, sqlite3.Connection):
+        return
     cursor = dbapi_connection.cursor()
     try:
         cursor.execute("PRAGMA foreign_keys=ON")
     finally:
         cursor.close()
+
+
+def ensure_sqlite_directory(database_uri):
+    """Create the parent folder required by a file-based SQLite database."""
+    url = make_url(database_uri)
+    if url.get_backend_name() != "sqlite" or not url.database or url.database == ":memory:":
+        return
+    Path(url.database).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
 
 
 def migrate_legacy_sla_deadlines(app):
@@ -63,6 +77,7 @@ def create_app(config_object=Config):
     if app.config.get("ENVIRONMENT") == "production" and app.config.get("SECRET_KEY") == "change-this-secret-in-production":
         raise RuntimeError("SECRET_KEY wajib diatur ke nilai yang aman pada environment production.")
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+    ensure_sqlite_directory(app.config["SQLALCHEMY_DATABASE_URI"])
     if not app.config.get("UPLOAD_FOLDER"):
         app.config["UPLOAD_FOLDER"] = str(Path(app.instance_path) / "uploads")
     Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
