@@ -16,6 +16,9 @@ di dalam project, sehingga project dapat dipindahkan ke folder/laptop lain. Pyth
 3.10 atau lebih baru harus sudah terpasang. Koneksi internet hanya diperlukan saat
 setup pertama untuk mengunduh dependensi.
 
+Launcher juga memasang database zona waktu `tzdata`. Dependensi ini diperlukan
+pada Windows agar zona `Asia/Jakarta` dapat digunakan tanpa error setelah login.
+
 Jangan menyalin folder `.venv` ke laptop lain. Jika folder tersebut telanjur ikut
 tersalin dan tidak dapat dipakai, `start.bat` akan membuatnya ulang secara otomatis.
 Data aplikasi berada di `instance/servicehub.db`; salin file itu bersama folder

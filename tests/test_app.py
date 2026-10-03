@@ -5,10 +5,12 @@ from zipfile import ZipFile
 
 import pytest
 from openpyxl import load_workbook
+from zoneinfo import ZoneInfoNotFoundError
 
 from config import BASE_DIR, TestConfig, env_value, sqlite_url
 from servicehub import create_app, db, ensure_sqlite_directory, migrate_legacy_sla_deadlines
 from servicehub.models import AuditLog, Category, Department, SLAConfig, Ticket, TicketAttachment, TicketHistory, User, utcnow
+from servicehub import utils
 from servicehub.utils import local_to_utc, utc_to_local
 
 
@@ -527,6 +529,30 @@ def test_blank_environment_value_uses_portable_default(monkeypatch):
     monkeypatch.setenv("PORTABLE_TEST_VALUE", "   ")
 
     assert env_value("PORTABLE_TEST_VALUE", "fallback") == "fallback"
+
+
+def test_jakarta_timezone_has_windows_fallback(monkeypatch):
+    def missing_timezone(_name):
+        raise ZoneInfoNotFoundError
+
+    monkeypatch.setattr(utils, "ZoneInfo", missing_timezone)
+    utc_value = datetime(2026, 10, 3, 4, 0)
+
+    local_value = utc_to_local(utc_value, "Asia/Jakarta")
+
+    assert local_value.hour == 11
+    assert local_value.utcoffset() == timedelta(hours=7)
+    assert local_to_utc(local_value.replace(tzinfo=None), "Asia/Jakarta") == utc_value
+
+
+def test_missing_custom_timezone_has_actionable_error(monkeypatch):
+    def missing_timezone(_name):
+        raise ZoneInfoNotFoundError
+
+    monkeypatch.setattr(utils, "ZoneInfo", missing_timezone)
+
+    with pytest.raises(RuntimeError, match="start.bat"):
+        utc_to_local(datetime(2026, 10, 3), "Invalid/Timezone")
 
 
 def test_sqlite_parent_directory_is_created():

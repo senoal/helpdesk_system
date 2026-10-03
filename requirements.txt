@@ -5,3 +5,4 @@ Flask-WTF==1.2.2
 Flask-Migrate==4.1.0
 openpyxl==3.1.5
 waitress==3.0.2
+tzdata>=2024.1
